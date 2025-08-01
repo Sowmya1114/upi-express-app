@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UPI Payment Redirect</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 60px;
+    }
+    button {
+      padding: 14px 24px;
+      margin: 10px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+    }
+    #startBtn { background-color: #0b63ce; }
+    #gpayBtn { background-color: #4285f4; }
+    #phonepeBtn { background-color: #4caf50; }
+    #paytmBtn { background-color: #3b99fc; }
+    #amazonBtn { background-color: #ff9900; color: black; }
+    #fallbackContainer {
+      display: none;
+      margin-top: 40px;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Pay with BHIM or Another UPI App</h2>
+  <button id="startBtn">Start with BHIM</button>
+
+  <p id="status"></p>
+
+  <div id="fallbackContainer">
+    <p>Didn't work? Try another app:</p>
+    <button id="gpayBtn">Google Pay</button>
+    <button id="phonepeBtn">PhonePe</button>
+    <button id="paytmBtn">Paytm</button>
+    <button id="amazonBtn">Amazon Pay</button>
+  </div>
+
+  <iframe id="intentFrame" style="display: none;"></iframe>
+
+  <script>
+    const vpa = "abc@ybl"; // Replace with your UPI ID
+    const name = "Sow";
+    const amount = "1.00";
+    const note = "Auto fallback UPI payment";
+
+    const upiUri = `upi://pay?pa=${vpa}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+
+    const intents = {
+      bhim: `intent://${upiUri.split("://")[1]}#Intent;scheme=upi;package=in.org.npci.upiapp;end`,
+      gpay: `intent://${upiUri.split("://")[1]}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`,
+      phonepe: `intent://${upiUri.split("://")[1]}#Intent;scheme=upi;package=com.phonepe.app;end`,
+      paytm: `intent://${upiUri.split("://")[1]}#Intent;scheme=upi;package=net.one97.paytm;end`,
+      amazon: `intent://${upiUri.split("://")[1]}#Intent;scheme=upi;package=in.amazon.mShop.android.shopping;end`
+    };
+
+    function openUPIApp(intentUrl) {
+      document.getElementById("intentFrame").src = intentUrl;
+    }
+
+    document.getElementById("startBtn").onclick = () => {
+      document.getElementById("status").innerText = "Trying BHIM...";
+      openUPIApp(intents.bhim);
+
+      setTimeout(() => {
+        document.getElementById("fallbackContainer").style.display = "block";
+        document.getElementById("status").innerText = "BHIM didn't respond? Try another app below.";
+      }, 10000);
+    };
+
+    document.getElementById("gpayBtn").onclick = () => {
+      document.getElementById("status").innerText = "Opening Google Pay...";
+      openUPIApp(intents.gpay);
+    };
+
+    document.getElementById("phonepeBtn").onclick = () => {
+      document.getElementById("status").innerText = "Opening PhonePe...";
+      openUPIApp(intents.phonepe);
+    };
+
+    document.getElementById("paytmBtn").onclick = () => {
+      document.getElementById("status").innerText = "Opening Paytm...";
+      openUPIApp(intents.paytm);
+    };
+
+    document.getElementById("amazonBtn").onclick = () => {
+      document.getElementById("status").innerText = "Opening Amazon Pay...";
+      openUPIApp(intents.amazon);
+    };
+  </script>
+</body>
+</html>
